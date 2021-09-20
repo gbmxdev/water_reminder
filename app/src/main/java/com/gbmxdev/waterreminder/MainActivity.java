@@ -8,6 +8,7 @@ import android.app.AlarmManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -63,8 +64,13 @@ public class MainActivity extends AppCompatActivity {
 //this will be the intent passed to set the notification
         Intent intent = new Intent();
         intent.putExtra("your_condition", 1);
-        //startActivity(intent);
-        this.onNewIntent(intent);
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+
+            this.onNewIntent(intent);
+        }
+        //this.onNewIntent(intent);
 //this creates the notification
 //this is the alarm to set the notification
         this.alarmSetter(intent);
