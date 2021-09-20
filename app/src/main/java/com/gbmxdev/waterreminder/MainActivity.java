@@ -34,8 +34,22 @@ bugs:
     unkown
  */
 public class MainActivity extends AppCompatActivity {
-
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        int i = intent.getIntExtra("your_condition", 0);
+        if(i>0){
+            this.createNotificationChannel();
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "Water Reminder")
+                    .setSmallIcon(R.drawable.icon)
+                    .setContentTitle("Water Reminder!")
+                    .setContentText("Please have a glass of water.")
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+            // notificationId is a unique int for each notification that you must define
+            notificationManager.notify(1, builder.build());
+        }
+    }
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -46,29 +60,14 @@ public class MainActivity extends AppCompatActivity {
         String timeInt = editText.getText().toString();
 
         // need to gather the config options for timer from the settings activity
+//this will be the intent passed to set the notification
         Intent intent = new Intent();
-        Context context = this;
-        int requestId = 0;
-        this.createNotificationChannel();
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "Water Reminder")
-        .setSmallIcon(R.drawable.icon)
-        .setContentTitle("Water Reminder!")
-        .setContentText("Please have a glass of water.")
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-
-        // notificationId is a unique int for each notification that you must define
-        notificationManager.notify(1, builder.build());
-
-        PendingIntent pendingIntent =  PendingIntent.getService(context, requestId, intent,  PendingIntent.FLAG_NO_CREATE);
-
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-
-        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_HALF_HOUR, AlarmManager.INTERVAL_HALF_HOUR, pendingIntent);
-        if (pendingIntent != null && alarmManager != null) {
-            alarmManager.cancel(pendingIntent);
-        }
+        intent.putExtra("your_condition", 1);
+        //startActivity(intent);
+        this.onNewIntent(intent);
+//this creates the notification
+//this is the alarm to set the notification
+        this.alarmSetter(intent);
     }
     private void createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -83,6 +82,17 @@ public class MainActivity extends AppCompatActivity {
             // or other notification behaviors after this
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
+        }
+    }
+    private void alarmSetter(Intent intent){
+        Context context = this;
+        int requestId = 0;
+        PendingIntent pendingIntent =  PendingIntent.getService(context, requestId, intent,  PendingIntent.FLAG_NO_CREATE);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_HALF_HOUR, AlarmManager.INTERVAL_HALF_HOUR, pendingIntent);
+        if (pendingIntent != null && alarmManager != null) {
+            alarmManager.cancel(pendingIntent);
         }
     }
 }
